@@ -1,16 +1,13 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
+import { useWorkoutStore } from '../stores/workoutStore';
 
-export interface WorkoutDay {
-  date: string;
-  completed: boolean;
+interface WorkoutCalendarProps {
+  className?: string;
 }
 
-export interface WorkoutCalendarProps {
-  workoutHistory: WorkoutDay[];
-}
-
-const WorkoutCalendar: React.FC<WorkoutCalendarProps> = ({ workoutHistory }) => {
+const WorkoutCalendar: React.FC<WorkoutCalendarProps> = ({ className = '' }) => {
+  const workoutHistory = useWorkoutStore(state => state.workoutHistory);
   const today = new Date();
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
@@ -24,6 +21,7 @@ const WorkoutCalendar: React.FC<WorkoutCalendarProps> = ({ workoutHistory }) => 
     completed: boolean;
     hasWorkout: boolean;
     isToday: boolean;
+    progress?: number;
   })[];
   // Add empty cells for days before month starts
   for (let i = 0; i < firstDayOfMonth; i++) {
@@ -33,13 +31,14 @@ const WorkoutCalendar: React.FC<WorkoutCalendarProps> = ({ workoutHistory }) => 
   for (let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const workoutDay = workoutHistory.find(w => w.date === dateStr);
-    const isToday = day === today.getDate();
+    const isToday = day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
     days.push({
       day,
       date: dateStr,
       completed: workoutDay?.completed || false,
       hasWorkout: !!workoutDay,
-      isToday
+      isToday,
+      progress: workoutDay?.progress
     });
   }
   const monthNames = [
@@ -47,7 +46,7 @@ const WorkoutCalendar: React.FC<WorkoutCalendarProps> = ({ workoutHistory }) => 
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
+    <div className={`bg-white rounded-xl p-6 shadow-sm ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-800">
           {monthNames[currentMonth]} {currentYear}
@@ -63,13 +62,16 @@ const WorkoutCalendar: React.FC<WorkoutCalendarProps> = ({ workoutHistory }) => 
         {days.map((day, index) => (
           <div key={index} className="aspect-square flex items-center justify-center">
             {day ? (
-              <div className={`
-                w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                ${day.isToday ? 'bg-indigo-600 text-white' : ''}
-                ${day.completed ? 'bg-green-100 text-green-800' : ''}
-                ${day.hasWorkout && !day.completed ? 'bg-red-100 text-red-800' : ''}
-                ${!day.hasWorkout && !day.isToday ? 'text-gray-400' : ''}
-              `}>
+              <div 
+                className={`
+                  w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
+                  ${day.isToday ? 'bg-indigo-600 text-white' : ''}
+                  ${day.completed ? 'bg-green-100 text-green-800' : ''}
+                  ${day.hasWorkout && !day.completed ? 'bg-yellow-100 text-yellow-800' : ''}
+                  ${!day.hasWorkout && !day.isToday ? 'text-gray-400' : ''}
+                `}
+                title={day.progress ? `Progress: ${day.progress}%` : ''}
+              >
                 {day.day}
               </div>
             ) : (
@@ -84,8 +86,8 @@ const WorkoutCalendar: React.FC<WorkoutCalendarProps> = ({ workoutHistory }) => 
           <span className="text-gray-600">Completed</span>
         </div>
         <div className="flex items-center space-x-1">
-          <div className="w-3 h-3 bg-red-100 rounded-full"></div>
-          <span className="text-gray-600">Missed</span>
+          <div className="w-3 h-3 bg-yellow-100 rounded-full"></div>
+          <span className="text-gray-600">Partial</span>
         </div>
         <div className="flex items-center space-x-1">
           <div className="w-3 h-3 bg-indigo-600 rounded-full"></div>

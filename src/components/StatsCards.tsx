@@ -1,67 +1,64 @@
 import React from 'react';
 import { Flame, Award, Target, Clock } from 'lucide-react';
+import { useWorkoutStore } from '../stores/workoutStore';
 
-export interface WorkoutDay {
-  date: string;
-  completed: boolean;
-}
-
-export interface StatsCardsProps {
-  workoutHistory: WorkoutDay[];
-}
-
-const StatsCards: React.FC<StatsCardsProps> = ({ workoutHistory }) => {
-  const totalWorkouts = workoutHistory.filter(w => w.completed).length;
-  const currentStreak = (() => {
-    let streak = 0;
-    const sorted = [...workoutHistory].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    for (const workout of sorted) {
-      if (workout.completed) streak++;
-      else break;
-    }
-    return streak;
-  })();
-  const weeklyGoal = 5;
-  const thisWeekCompleted = 3; // This would be calculated from actual data
+const StatsCards: React.FC = () => {
+  const { 
+    totalWorkouts,
+    currentStreak,
+    weeklyGoal,
+    thisWeekCompleted,
+    totalTimeSpent
+  } = useWorkoutStore();
+  
   const stats = [
     {
       icon: Flame,
       label: 'Current Streak',
       value: `${currentStreak} days`,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50'
+      bgColor: 'bg-orange-50',
+      iconBg: 'bg-orange-500'
     },
     {
       icon: Award,
       label: 'Total Workouts',
       value: totalWorkouts,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      bgColor: 'bg-blue-50',
+      iconBg: 'bg-blue-500'
     },
     {
       icon: Target,
       label: 'Weekly Goal',
       value: `${thisWeekCompleted}/${weeklyGoal}`,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50'
+      bgColor: 'bg-green-50',
+      iconBg: 'bg-green-500'
     },
     {
       icon: Clock,
       label: 'Total Hours',
-      value: `${Math.floor(totalWorkouts * 0.5)}h`,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
+      value: `${Math.floor(totalTimeSpent / 60)}h`,
+      bgColor: 'bg-purple-50',
+      iconBg: 'bg-purple-500'
     }
   ];
+  
   return (
     <div className="grid grid-cols-2 gap-4">
       {stats.map((stat, index) => (
-        <div key={index} className="bg-white rounded-xl p-4 shadow-sm">
-          <div className={`${stat.bgColor} rounded-lg p-2 w-fit mb-3`}>
-            <stat.icon className={`w-5 h-5 ${stat.color}`} />
+        <div
+          key={index}
+          className={`${stat.bgColor} rounded-xl p-5 shadow-sm relative overflow-hidden`}
+        >
+          <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-white bg-opacity-60 -mt-6 -mr-6"></div>
+          <div className="mb-2">
+            <div className={`${stat.iconBg} rounded-full p-2 w-fit`}>
+              <stat.icon className="w-5 h-5 text-white" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-gray-800 mb-1">{stat.value}</div>
-          <div className="text-sm text-gray-600">{stat.label}</div>
+          <div>
+            <div className="text-3xl font-bold text-gray-800">{stat.value}</div>
+            <div className="text-sm font-medium text-gray-600">{stat.label}</div>
+          </div>
         </div>
       ))}
     </div>

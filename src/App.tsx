@@ -1,37 +1,20 @@
-import { useState } from 'react';
-import HomeScreen from './components/HomeScreen';
-import WorkoutScreen from './components/WorkoutScreen';
-import type { WorkoutDay } from './components/WorkoutCalendar';
-
-// Sample workout data for analytics
-const workoutHistory: WorkoutDay[] = [
-  { date: '2024-06-20', completed: true },
-  { date: '2024-06-21', completed: true },
-  { date: '2024-06-22', completed: false },
-  { date: '2024-06-23', completed: true },
-  { date: '2024-06-24', completed: false }, // today
-];
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import WorkoutPage from './pages/WorkoutPage';
+import ExercisePage from './pages/ExercisePage';
 
 const QuickFitApp = () => {
-  const [currentScreen, setCurrentScreen] = useState('home');
-
-  const startWorkout = () => {
-    setCurrentScreen('workout');
-  };
-
-  const goHome = () => {
-    setCurrentScreen('home');
-  };
-
-  if (currentScreen === 'home') {
-    return <HomeScreen onStartWorkout={startWorkout} workoutHistory={workoutHistory} />;
-  }
-
-  if (currentScreen === 'workout') {
-    return <WorkoutScreen onBack={goHome} />;
-  }
-
-  return null;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/workout" element={<WorkoutPage />} />
+        <Route path="/exercise/:sectionId/:exerciseId" element={<ExercisePage />} />
+        <Route path="/exercise" element={<ExercisePage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 };
 
 export default QuickFitApp;

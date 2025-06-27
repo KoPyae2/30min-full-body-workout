@@ -1,31 +1,59 @@
 import React from 'react';
 import { TrendingUp } from 'lucide-react';
+import { useWorkoutStore } from '../stores/workoutStore';
 
 const WeeklyProgress: React.FC = () => {
-  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const progress = [true, true, false, true, false, false, false]; // Sample data
+  const { workoutHistory, thisWeekCompleted, weeklyGoal } = useWorkoutStore();
+  
+  // Generate last 7 days for display
+  const getLastSevenDays = () => {
+    const days = [];
+    const today = new Date();
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(today.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      days.push({
+        day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()],
+        date: dateStr,
+        completed: workoutHistory.some(d => d.date === dateStr && d.completed)
+      });
+    }
+    
+    return days;
+  };
+  
+  const weekDays = getLastSevenDays();
+  const completionPercentage = Math.round((thisWeekCompleted / weeklyGoal) * 100);
+  
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">This Week</h3>
-        <TrendingUp className="w-5 h-5 text-gray-500" />
-      </div>
+    <>
       <div className="flex justify-between items-end space-x-2">
         {weekDays.map((day, index) => (
-          <div key={day} className="flex flex-col items-center space-y-2">
-            <div className={`w-8 h-16 rounded-lg flex items-end ${progress[index] ? 'bg-indigo-600' : 'bg-gray-200'}`}>
-              <div className={`w-full rounded-lg transition-all duration-300 ${progress[index] ? 'h-full bg-indigo-600' : 'h-2 bg-gray-300'}`}></div>
+          <div key={index} className="flex flex-col items-center space-y-2 flex-1">
+            <div className="w-full">
+              <div 
+                className={`h-16 rounded-lg ${day.completed ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                style={{ opacity: day.completed ? 1 : 0.5 }}
+              ></div>
             </div>
-            <span className="text-xs text-gray-600 font-medium">{day}</span>
+            <span className="text-xs font-medium text-gray-500">{day.day}</span>
           </div>
         ))}
       </div>
-      <div className="mt-4 text-center">
-        <span className="text-sm text-gray-600">
-          3 of 7 days completed this week
-        </span>
+
+      <div className="mt-4 flex items-center justify-between">
+        <div>
+          <span className="text-lg font-bold text-gray-800">{thisWeekCompleted}/{weeklyGoal} days</span>
+          <p className="text-sm text-gray-500">completed this week</p>
+        </div>
+        <div className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium text-sm flex items-center">
+          <TrendingUp className="w-4 h-4 mr-1" />
+          {completionPercentage}%
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
